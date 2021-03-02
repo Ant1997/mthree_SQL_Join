@@ -140,6 +140,14 @@ WHERE Workout.WorkoutId IS NULL;
 -- 6 rows, 4 unique rows
 SELECT Workout.Name as Workout
 FROM Workout
+JOIN WorkoutGoal ON Workout.WorkoutId = WorkoutGoal.WorkoutId
+JOIN Goal ON WorkoutGoal.GoalId = Goal.GoalId
+JOIN ClientGoal ON Goal.GoalId = ClientGoal.GoalId
+JOIN Client ON ClientGoal.ClientId = Client.ClientId
+WHERE Client.FirstName = 'Shell' 
+AND Client.LastName = 'Creane' 
+AND Workout.LevelId = 1;
+
 --------------------
 
 -- Select all Workouts. 
@@ -148,6 +156,14 @@ FROM Workout
 -- If you filter on Goal.Name in a WHERE clause, Workouts will be excluded.
 -- Why?
 -- 26 Workouts, 3 Goals
+
+SELECT
+	w.`Name` WorkoutName,
+    g.`Name` GoalName
+FROM Workout w
+LEFT OUTER JOIN WorkoutGoal wg 
+	ON w.WorkoutId = wg.WorkoutId AND wg.GoalId = 10
+LEFT OUTER JOIN Goal g ON wg.GoalId = g.GoalId;
 --------------------
 
 -- The relationship between Workouts and Exercises is... complicated.
@@ -159,6 +175,19 @@ FROM Workout
 -- laps, etc...) 
 -- which finally links to Exercise.
 -- Select Workout.Name and Exercise.Name for related Workouts and Exercises.
+SELECT
+	w.`Name` WorkoutName,
+    e.`Name` ExerciseName
+FROM Workout w
+INNER JOIN WorkoutDay wd 
+	ON w.WorkoutId = wd.WorkoutId
+INNER JOIN WorkoutDayExerciseInstance wdei 
+	ON wd.WorkoutDayId = wdei.WorkoutDayId
+INNER JOIN ExerciseInstance ei 
+	ON wdei.ExerciseInstanceId = ei.ExerciseInstanceId
+INNER JOIN Exercise e 
+	ON ei.ExerciseId = e.ExerciseId;
+   
 --------------------
    
 -- An ExerciseInstance is configured with ExerciseInstanceUnitValue.
@@ -169,4 +198,14 @@ FROM Workout
 -- How many Planks are configured, which Units apply, and what 
 -- are the configured Values?
 -- 4 rows, 1 Unit, and 4 distinct Values
+SELECT
+	e.`Name` ExerciseName,
+    uv.`Value`,
+    u.`Name` UnitName
+FROM Exercise e
+INNER JOIN ExerciseInstance ei ON e.ExerciseId = ei.ExerciseId
+LEFT OUTER JOIN ExerciseInstanceUnitValue uv
+	ON ei.ExerciseInstanceId = uv.ExerciseInstanceId
+LEFT OUTER JOIN Unit u On uv.UnitId = u.UnitId
+WHERE e.`Name` = 'Plank';
 --------------------
